@@ -1,6 +1,6 @@
 var dynamicTooltip = (function () {
     "use strict";
-    var scriptVersion = "1.1";
+    var scriptVersion = "1.2";
     var util = {
         version: "1.0.1",
         escapeHTML: function (str) {
