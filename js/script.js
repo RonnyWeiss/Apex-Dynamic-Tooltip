@@ -2,7 +2,7 @@ var dynamicTooltip = (function () {
     "use strict";
     var scriptVersion = "1.3";
     var util = {
-        version: "1.0.1",
+        version: "1.0.5",
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
