@@ -1,6 +1,6 @@
 var dynamicTooltip = (function () {
     "use strict";
-    var scriptVersion = "1.3";
+    var scriptVersion = "1.4";
     var util = {
         version: "1.0.5",
         isAPEX: function () {
@@ -129,13 +129,30 @@ var dynamicTooltip = (function () {
         }
     };
 
+    /***********************************************************************
+     **
+     ** Used to sanitize HTML
+     **
+     ***********************************************************************/
+    function sanitizeVALUE(pValue, pSanitizeHTMLOptions) {
+        return DOMPurify.sanitize(pValue, pSanitizeHTMLOptions);
+    }
+
     return {
-        initialize: function (elemetSelector, ajaxID, items2Submit, pKey, sKey, tKey, udConfigJSON, escapeRequired) {
+        initialize: function (elemetSelector, ajaxID, items2Submit, pKey, sKey, tKey, udConfigJSON, escapeRequired, sanitizeHTML, sanitizeHTMLOptions) {
             var stdConfigJSON = {
                 "backgroundColor": "rgba(240, 240, 240, 1)",
                 "maxWidth": "400px",
                 "ajaxDelay": 500
             };
+
+            var defaultSanitizeOptions = {
+                "ALLOWED_ATTR": ["accesskey", "align", "alt", "always", "autocomplete", "autoplay", "border", "cellpadding", "cellspacing", "charset", "class", "dir", "height", "href", "id", "lang", "name", "rel", "required", "src", "style", "summary", "tabindex", "target", "title", "type", "value", "width"],
+                "ALLOWED_TAGS": ["a", "address", "b", "blockquote", "br", "caption", "code", "dd", "div", "dl", "dt", "em", "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "label", "li", "nl", "ol", "p", "pre", "s", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td", "th", "thead", "tr", "u", "ul"]
+            };
+
+            /* merge user defined sanitize options */
+            var sanitizeHTMLOptionsFinal = util.jsonSaveExtend(defaultSanitizeOptions, sanitizeHTMLOptions);
 
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
@@ -222,7 +239,11 @@ var dynamicTooltip = (function () {
                             color = util.escapeHTML(((content.row[0].BACKGROUNDCOLOR) ? content.row[0].BACKGROUNDCOLOR : configJSON.backgroundColor));
                             maxWidth = util.escapeHTML(configJSON.maxWidth);
                         } else {
-                            output = content.row[0].TOOLTIP;
+                            if (sanitizeHTML == 'N') {
+                                output = content.row[0].TOOLTIP;
+                            } else {
+                                output = sanitizeVALUE(content.row[0].TOOLTIP, sanitizeHTMLOptionsFinal);
+                            }
                             color = ((content.row[0].BACKGROUNDCOLOR) ? content.row[0].BACKGROUNDCOLOR : configJSON.backgroundColor);
                             maxWidth = configJSON.maxWidth;
                         }
