@@ -1,8 +1,8 @@
 var dynamicTooltip = (function () {
     "use strict";
-    var scriptVersion = "1.4";
+    var scriptVersion = "1.5";
     var util = {
-        version: "1.0.5",
+        version: "1.2",
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -53,21 +53,22 @@ var dynamicTooltip = (function () {
         },
         jsonSaveExtend: function (srcConfig, targetConfig) {
             var finalConfig = {};
+            var tmpJSON = {};
             /* try to parse config json when string or just set */
             if (typeof targetConfig === 'string') {
                 try {
-                    targetConfig = JSON.parse(targetConfig);
+                    tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
                     console.error("Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.");
                     console.error(e);
                     console.error(targetConfig);
                 }
             } else {
-                finalConfig = targetConfig;
+                tmpJSON = targetConfig;
             }
             /* try to merge with standard if any attribute is missing */
             try {
-                finalConfig = $.extend(true, srcConfig, targetConfig);
+                finalConfig = $.extend(true, srcConfig, tmpJSON);
             } catch (e) {
                 console.error('Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.');
                 console.error(e);
@@ -107,7 +108,22 @@ var dynamicTooltip = (function () {
                     } else {
                         $("#dynToolTip").css("visibility", "visible");
                     }
+
                     $("#dynToolTip").html(htmlContent);
+                    $("#dynToolTip")
+                        .children()
+                        .css("max-width", "100%")
+                        .css("overflow-wrap", "break-word")
+                        .css("word-wrap", "break-word")
+                        .css("-ms-hyphens", "auto")
+                        .css("-moz-hyphens", "auto")
+                        .css("-webkit-hyphens", "auto")
+                        .css("hyphens", "auto")
+                        .css("white-space", "normal");
+                    $("#dynToolTip")
+                        .children('img')
+                        .css("object-fit", "contain")
+                        .css("object-position", "50% 0%");
                 } catch (e) {
                     console.error('Error while try to show tooltip');
                     console.error(e);
