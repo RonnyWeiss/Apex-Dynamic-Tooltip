@@ -2,7 +2,7 @@ var dynamicTooltip = (function () {
     "use strict";
     var scriptVersion = "1.5";
     var util = {
-        version: "1.2",
+        version: "1.2.1",
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -111,7 +111,7 @@ var dynamicTooltip = (function () {
 
                     $("#dynToolTip").html(htmlContent);
                     $("#dynToolTip")
-                        .children()
+                        .find("*")
                         .css("max-width", "100%")
                         .css("overflow-wrap", "break-word")
                         .css("word-wrap", "break-word")
