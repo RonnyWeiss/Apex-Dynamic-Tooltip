@@ -1,8 +1,8 @@
 var dynamicTooltip = (function () {
     "use strict";
-    var scriptVersion = "1.5";
+    var scriptVersion = "1.6";
     var util = {
-        version: "1.2.1",
+        version: "1.2.3",
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -121,7 +121,7 @@ var dynamicTooltip = (function () {
                         .css("hyphens", "auto")
                         .css("white-space", "normal");
                     $("#dynToolTip")
-                        .children('img')
+                        .find("img")
                         .css("object-fit", "contain")
                         .css("object-position", "50% 0%");
                 } catch (e) {
