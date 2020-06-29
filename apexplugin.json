@@ -1,7 +1,7 @@
 {
     "name": "Dynamic Tooltip",
     "version": "1.6",
-    "description": "This plug-in is used to dynamically show a tooltip on any page element. With mouse-hover the content of the tooltip is loaded live from the database. Filter attributes in the desired element can then be used to filter the select. E.g.:\r\n\r\n<h2 id=\"myID\" pk=\"1\", sk=\"2\">test<\/h2>\r\n\r\nSo when you make a mouse-hover then the select uses the two attributes pk and sk to filter in sql statement. There is also a third one \"tk\". To submit these values you need three setable items on the page and these where set on hover. Then they where submitted and can be used as filter in sql statement. Login for Demo is: user-demo / 123456@",
+    "description": "This plug-in is used to dynamically show a tooltip on any page element. With mouse-hover the content of the tooltip is loaded live from the database. Filter attributes in the desired element can then be used to filter the select. E.g.:\r\n\r\n<h2 id=\"myID\" pk=\"1\", sk=\"2\">test<\/h2>\r\n\r\nSo when you make a mouse-hover then the select uses the two attributes pk and sk to filter in sql statement. There is also a third one \"tk\". To submit these values you need three setable items on the page and these where set on hover. Then they where submitted and can be used as filter in sql statement.",
     "keywords": ["oracle", "apex", "plugin", "dynamic action", "responsive", "notification"],
     "homepage": "https://github.com/RonnyWeiss/Apex-Dynamic-Tooltip",
     "bugs": {
@@ -22,7 +22,7 @@
     "oracle": {
         "versions": ["12.1.0.1", "12.2.0.1", "18.4.0.0", "19.0.0.0.0"],
         "apex": {
-            "versions": ["5.1.3", "18.1.0.00.45", "18.2.0.00.12", "19.1.0.00.15", "19.2.0.00.18"],
+            "versions": ["5.1.3", "18.1.0.00.45", "18.2.0.00.12", "19.1.0.00.15", "19.2.0.00.18", "20.1.0.00.13"],
             "plugin": {
                 "internalName": "APEX.DYNAMICTOOLTIP",
                 "type": "dynamic action",

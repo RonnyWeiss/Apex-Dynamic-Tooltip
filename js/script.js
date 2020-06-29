@@ -1,8 +1,25 @@
 var dynamicTooltip = (function () {
     "use strict";
-    var scriptVersion = "1.6";
     var util = {
-        version: "1.2.3",
+        /**********************************************************************************
+         ** required functions 
+         *********************************************************************************/
+        featureInfo: {
+            name: "APEX-Dynamic-Tooltip",
+            info: {
+                scriptVersion: "1.7",
+                utilVersion: "1.3.3",
+                url: "https://github.com/RonnyWeiss",
+                license: "MIT"
+            }
+        },
+        isDefinedAndNotNull: function (pInput) {
+            if (typeof pInput !== "undefined" && pInput !== null && pInput != "") {
+                return true;
+            } else {
+                return false;
+            }
+        },
         isAPEX: function () {
             if (typeof (apex) !== 'undefined') {
                 return true;
@@ -10,20 +27,41 @@ var dynamicTooltip = (function () {
                 return false;
             }
         },
+        varType: function (pObj) {
+            if (typeof pObj === "object") {
+                var arrayConstructor = [].constructor;
+                var objectConstructor = ({}).constructor;
+                if (pObj.constructor === arrayConstructor) {
+                    return "array";
+                }
+                if (pObj.constructor === objectConstructor) {
+                    return "json";
+                }
+            } else {
+                return typeof pObj;
+            }
+        },
         debug: {
-            info: function (str) {
+            info: function () {
                 if (util.isAPEX()) {
-                    apex.debug.info(str);
+                    var arr = Array.from(arguments);
+                    arr.push(util.featureInfo);
+                    apex.debug.info.apply(this, arr);
                 }
             },
-            error: function (str) {
+            error: function () {
+                var arr = Array.from(arguments);
+                arr.push(util.featureInfo);
                 if (util.isAPEX()) {
-                    apex.debug.error(str);
+                    apex.debug.error.apply(this, arr);
                 } else {
-                    console.error(str);
+                    console.error.apply(this, arr);
                 }
             }
         },
+        /**********************************************************************************
+         ** optinal functions 
+         *********************************************************************************/
         escapeHTML: function (str) {
             if (str === null) {
                 return null;
@@ -59,21 +97,25 @@ var dynamicTooltip = (function () {
                 try {
                     tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
-                    console.error("Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.");
-                    console.error(e);
-                    console.error(targetConfig);
+                    util.debug.error({
+                        "msg": "Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.",
+                        "err": e,
+                        "targetConfig": targetConfig
+                    });
                 }
             } else {
-                tmpJSON = targetConfig;
+                tmpJSON = $.extend(true, {}, targetConfig);
             }
             /* try to merge with standard if any attribute is missing */
             try {
-                finalConfig = $.extend(true, srcConfig, tmpJSON);
+                finalConfig = $.extend(true, {}, srcConfig, tmpJSON);
             } catch (e) {
-                console.error('Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.');
-                console.error(e);
-                finalConfig = srcConfig;
-                console.error(finalConfig);
+                finalConfig = $.extend(true, {}, srcConfig);
+                util.debug.error({
+                    "msg": "Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.",
+                    "err": e,
+                    "finalConfig": finalConfig
+                });
             }
             return finalConfig;
         },
@@ -142,6 +184,17 @@ var dynamicTooltip = (function () {
             remove: function () {
                 $("#dynToolTip").remove();
             }
+        },
+        setItemValue: function (itemName, value) {
+            if (util.isAPEX()) {
+                if (apex.item(itemName) && apex.item(itemName).node != false) {
+                    apex.item(itemName).setValue(value);
+                } else {
+                    util.debug.error("Please choose a set item. Because the value (" + value + ") can not be set on item (" + itemName + ")");
+                }
+            } else {
+                util.debug.error("Error while try to call apex.item");
+            }
         }
     };
 
@@ -155,7 +208,22 @@ var dynamicTooltip = (function () {
     }
 
     return {
-        initialize: function (elemetSelector, ajaxID, items2Submit, pKey, sKey, tKey, udConfigJSON, escapeRequired, sanitizeHTML, sanitizeHTMLOptions) {
+        initialize: function (elemetSelector, ajaxID, items2Submit, pKey, sKey, tKey, udConfigJSON, escapeRequired, sanitizeHTML, sanitizeHTMLOptions, openOn) {
+
+            util.debug.info({
+                "elemetSelector": elemetSelector,
+                "ajaxID": ajaxID,
+                "items2Submit": items2Submit,
+                "pKey": pKey,
+                "sKey": sKey,
+                "tKey": tKey,
+                "udConfigJSON": udConfigJSON,
+                "escapeRequired": escapeRequired,
+                "sanitizeHTML": sanitizeHTML,
+                "sanitizeHTMLOptions": sanitizeHTMLOptions,
+                "openOn": openOn
+            });
+
             var stdConfigJSON = {
                 "backgroundColor": "rgba(240, 240, 240, 1)",
                 "maxWidth": "400px",
@@ -174,6 +242,42 @@ var dynamicTooltip = (function () {
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
             var element = $(elemetSelector);
 
+            /* function to activate tooltip, get data and show tt */
+            function activateTT(pObj, pEvent) {
+                /* set values of the pk items */
+                if (util.isDefinedAndNotNull(pKey)) {
+                    util.setItemValue(pKey, $(pObj).attr("pk"), null, true);
+                }
+                if (util.isDefinedAndNotNull(sKey)) {
+                    util.setItemValue(sKey, $(pObj).attr("sk"), null, true);
+                }
+                if (util.isDefinedAndNotNull(tKey)) {
+                    util.setItemValue(tKey, $(pObj).attr("tk"), null, true);
+                }
+
+                /* call server and submit all items */
+                apex.server.plugin(
+                    ajaxID, {
+                        pageItems: items2Submit
+                    }, {
+                        success: function (pData) {
+                            if (openOn === "click") {
+                                showTooltip(pData);
+                                util.tooltip.setPosition(pEvent);
+                            } else {
+                                if (pObj.is(":hover")) {
+                                    showTooltip(pData);
+                                    util.tooltip.setPosition(pEvent);
+                                }
+                            }
+                        },
+                        error: function (d) {
+                            util.debug.error(d.responseText);
+                        },
+                        dataType: "json"
+                    });
+            }
+
             /* for each element bind events */
             $.each(element, function () {
                 var _this = $(this);
@@ -184,58 +288,49 @@ var dynamicTooltip = (function () {
                     _this.attr("hastooltip", true);
                     /***********************************************************************
                      **
-                     ** Used to get data and to show tooltip with a little timeout to 
-                     ** to much data loading
+                     ** Show tooltip
                      **
                      ***********************************************************************/
-                    _this.on("mouseenter", function (obj) {
-                        setTimeout(function () {
-                            if (_this.is(":hover")) {
-                                setTimeout(function () {
-                                    if (_this.is(":hover")) {
-                                        /* set values of the pk items */
-                                        apex.item(pKey).setValue($(_this).attr("pk"), null, true);
-                                        apex.item(sKey).setValue($(_this).attr("sk"), null, true);
-                                        apex.item(tKey).setValue($(_this).attr("tk"), null, true);
-                                        /* call server and submit all items */
-                                        apex.server.plugin(
-                                            ajaxID, {
-                                                pageItems: items2Submit
-                                            }, {
-                                                success: function (pData) {
-                                                    if (_this.is(":hover")) {
-                                                        showTooltip(pData);
-                                                        util.tooltip.setPosition(obj);
-                                                    }
-                                                },
-                                                error: function (d) {
-                                                    console.log(d.responseText);
-                                                },
-                                                dataType: "json"
-                                            });
-                                    }
-                                }, Math.round(configJSON.ajaxDelay / 2));
+                    if (openOn === "click") {
+                        _this.on("touchstart click", function (event) {
+                            util.tooltip.hide();
+                            activateTT(_this, event);
+                        });
+                    } else {
+                        _this.on("mouseenter", function (event) {
+                            /* used to debounce mousehover to save data */
+                            setTimeout(function () {
+                                if (_this.is(":hover")) {
+                                    setTimeout(function () {
+                                        if (_this.is(":hover")) {
+                                            activateTT(_this, event);
+                                        }
+                                    }, Math.round(configJSON.ajaxDelay / 2));
+                                }
+                            }, Math.round(configJSON.ajaxDelay / 2));
+                        });
+                    }
+
+                    /***********************************************************************
+                     **
+                     ** Hide tooltip
+                     **
+                     ***********************************************************************/
+                    if (openOn === "click") {
+                        $(document).on("touchstart click", function (e) {
+                            if (!_this.is(e.target) && _this.has(e.target).length === 0) {
+                                util.tooltip.hide();
                             }
-                        }, Math.round(configJSON.ajaxDelay / 2));
-                    });
+                        });
+                    } else {
+                        _this.on("mouseleave", function () {
+                            util.tooltip.hide();
+                        });
 
-                    /***********************************************************************
-                     **
-                     ** Hide tooltip when mouse leaves object
-                     **
-                     ***********************************************************************/
-                    _this.on("mouseleave", function () {
-                        util.tooltip.hide();
-                    });
-
-                    /***********************************************************************
-                     **
-                     ** Used to set position when mouse if moving oder object
-                     **
-                     ***********************************************************************/
-                    _this.on("mousemove", function (event) {
-                        util.tooltip.setPosition(event);
-                    });
+                        _this.on("mousemove", function (event) {
+                            util.tooltip.setPosition(event);
+                        });
+                    }
                 }
             });
 
