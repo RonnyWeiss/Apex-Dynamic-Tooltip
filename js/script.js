@@ -1,17 +1,12 @@
 var dynamicTooltip = (function () {
     "use strict";
     var util = {
-        /**********************************************************************************
-         ** required functions 
-         *********************************************************************************/
-        featureInfo: {
+        featureDetails: {
             name: "APEX-Dynamic-Tooltip",
-            info: {
-                scriptVersion: "1.7",
-                utilVersion: "1.3.3",
-                url: "https://github.com/RonnyWeiss",
-                license: "MIT"
-            }
+            scriptVersion: "1.7.1",
+            utilVersion: "1.4",
+            url: "https://github.com/RonnyWeiss",
+            license: "MIT"
         },
         isDefinedAndNotNull: function (pInput) {
             if (typeof pInput !== "undefined" && pInput !== null && pInput != "") {
@@ -20,48 +15,6 @@ var dynamicTooltip = (function () {
                 return false;
             }
         },
-        isAPEX: function () {
-            if (typeof (apex) !== 'undefined') {
-                return true;
-            } else {
-                return false;
-            }
-        },
-        varType: function (pObj) {
-            if (typeof pObj === "object") {
-                var arrayConstructor = [].constructor;
-                var objectConstructor = ({}).constructor;
-                if (pObj.constructor === arrayConstructor) {
-                    return "array";
-                }
-                if (pObj.constructor === objectConstructor) {
-                    return "json";
-                }
-            } else {
-                return typeof pObj;
-            }
-        },
-        debug: {
-            info: function () {
-                if (util.isAPEX()) {
-                    var arr = Array.from(arguments);
-                    arr.push(util.featureInfo);
-                    apex.debug.info.apply(this, arr);
-                }
-            },
-            error: function () {
-                var arr = Array.from(arguments);
-                arr.push(util.featureInfo);
-                if (util.isAPEX()) {
-                    apex.debug.error.apply(this, arr);
-                } else {
-                    console.error.apply(this, arr);
-                }
-            }
-        },
-        /**********************************************************************************
-         ** optinal functions 
-         *********************************************************************************/
         escapeHTML: function (str) {
             if (str === null) {
                 return null;
@@ -76,18 +29,7 @@ var dynamicTooltip = (function () {
                     /*do nothing */
                 }
             }
-            if (util.isAPEX()) {
-                return apex.util.escapeHTML(String(str));
-            } else {
-                str = String(str);
-                return str
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#x27;")
-                    .replace(/\//g, "&#x2F;");
-            }
+            return apex.util.escapeHTML(String(str));
         },
         jsonSaveExtend: function (srcConfig, targetConfig) {
             var finalConfig = {};
@@ -97,7 +39,8 @@ var dynamicTooltip = (function () {
                 try {
                     tmpJSON = JSON.parse(targetConfig);
                 } catch (e) {
-                    util.debug.error({
+                    apex.debug.error({
+                        "module": "util.js",
                         "msg": "Error while try to parse targetConfig. Please check your Config JSON. Standard Config will be used.",
                         "err": e,
                         "targetConfig": targetConfig
@@ -111,7 +54,8 @@ var dynamicTooltip = (function () {
                 finalConfig = $.extend(true, {}, srcConfig, tmpJSON);
             } catch (e) {
                 finalConfig = $.extend(true, {}, srcConfig);
-                util.debug.error({
+                apex.debug.error({
+                    "module": "util.js",
                     "msg": "Error while try to merge 2 JSONs into standard JSON if any attribute is missing. Please check your Config JSON. Standard Config will be used.",
                     "err": e,
                     "finalConfig": finalConfig
@@ -167,8 +111,11 @@ var dynamicTooltip = (function () {
                         .css("object-fit", "contain")
                         .css("object-position", "50% 0%");
                 } catch (e) {
-                    console.error('Error while try to show tooltip');
-                    console.error(e);
+                    apex.debug.error({
+                        "module": "utils.js",
+                        "msg": "Error while try to show tooltip",
+                        "err": e
+                    });
                 }
             },
             setPosition: function (event) {
@@ -183,17 +130,6 @@ var dynamicTooltip = (function () {
             },
             remove: function () {
                 $("#dynToolTip").remove();
-            }
-        },
-        setItemValue: function (itemName, value) {
-            if (util.isAPEX()) {
-                if (apex.item(itemName) && apex.item(itemName).node != false) {
-                    apex.item(itemName).setValue(value);
-                } else {
-                    util.debug.error("Please choose a set item. Because the value (" + value + ") can not be set on item (" + itemName + ")");
-                }
-            } else {
-                util.debug.error("Error while try to call apex.item");
             }
         }
     };
@@ -210,18 +146,22 @@ var dynamicTooltip = (function () {
     return {
         initialize: function (elemetSelector, ajaxID, items2Submit, pKey, sKey, tKey, udConfigJSON, escapeRequired, sanitizeHTML, sanitizeHTMLOptions, openOn) {
 
-            util.debug.info({
-                "elemetSelector": elemetSelector,
-                "ajaxID": ajaxID,
-                "items2Submit": items2Submit,
-                "pKey": pKey,
-                "sKey": sKey,
-                "tKey": tKey,
-                "udConfigJSON": udConfigJSON,
-                "escapeRequired": escapeRequired,
-                "sanitizeHTML": sanitizeHTML,
-                "sanitizeHTMLOptions": sanitizeHTMLOptions,
-                "openOn": openOn
+            apex.debug.info({
+                "fct": util.featureDetails.name + " - " + "initialize",
+                "arguments": {
+                    "elemetSelector": elemetSelector,
+                    "ajaxID": ajaxID,
+                    "items2Submit": items2Submit,
+                    "pKey": pKey,
+                    "sKey": sKey,
+                    "tKey": tKey,
+                    "udConfigJSON": udConfigJSON,
+                    "escapeRequired": escapeRequired,
+                    "sanitizeHTML": sanitizeHTML,
+                    "sanitizeHTMLOptions": sanitizeHTMLOptions,
+                    "openOn": openOn
+                },
+                "featureDetails": util.featureDetails
             });
 
             var stdConfigJSON = {
@@ -246,13 +186,13 @@ var dynamicTooltip = (function () {
             function activateTT(pObj, pEvent) {
                 /* set values of the pk items */
                 if (util.isDefinedAndNotNull(pKey)) {
-                    util.setItemValue(pKey, $(pObj).attr("pk"), null, true);
+                    apex.item(pKey).setValue($(pObj).attr("pk"));
                 }
                 if (util.isDefinedAndNotNull(sKey)) {
-                    util.setItemValue(sKey, $(pObj).attr("sk"), null, true);
+                    apex.item(sKey).setValue($(pObj).attr("sk"));
                 }
                 if (util.isDefinedAndNotNull(tKey)) {
-                    util.setItemValue(tKey, $(pObj).attr("tk"), null, true);
+                    apex.item(tKey).setValue($(pObj).attr("tk"));
                 }
 
                 /* call server and submit all items */
@@ -261,6 +201,12 @@ var dynamicTooltip = (function () {
                         pageItems: items2Submit
                     }, {
                         success: function (pData) {
+                            apex.debug.info({
+                                "fct": util.featureDetails.name + " - " + "initialize",
+                                "msg": "AJAX data received",
+                                "pData": pData,
+                                "featureDetails": util.featureDetails
+                            });
                             if (openOn === "click") {
                                 showTooltip(pData);
                                 util.tooltip.setPosition(pEvent);
@@ -272,7 +218,12 @@ var dynamicTooltip = (function () {
                             }
                         },
                         error: function (d) {
-                            util.debug.error(d.responseText);
+                            apex.debug.error({
+                                "fct": util.featureDetails.name + " - " + "initialize",
+                                "msg": "Error whiley try to get AJAX data",
+                                "response": d,
+                                "featureDetails": util.featureDetails
+                            });
                         },
                         dataType: "json"
                     });
