@@ -3,7 +3,7 @@ var dynamicTooltip = (function () {
     var util = {
         featureDetails: {
             name: "APEX-Dynamic-Tooltip",
-            scriptVersion: "1.7.1",
+            scriptVersion: "1.7.2",
             utilVersion: "1.4",
             url: "https://github.com/RonnyWeiss",
             license: "MIT"
@@ -171,7 +171,7 @@ var dynamicTooltip = (function () {
             };
 
             var defaultSanitizeOptions = {
-                "ALLOWED_ATTR": ["accesskey", "align", "alt", "always", "autocomplete", "autoplay", "border", "cellpadding", "cellspacing", "charset", "class", "dir", "height", "href", "id", "lang", "name", "rel", "required", "src", "style", "summary", "tabindex", "target", "title", "type", "value", "width"],
+                "ALLOWED_ATTR": ["accesskey", "align", "alt", "always", "autocomplete", "autoplay", "border", "cellpadding", "cellspacing", "charset", "class", "colspan", "dir", "height", "href", "id", "lang", "name", "rel", "required", "rowspan", "src", "style", "summary", "tabindex", "target", "title", "type", "value", "width"],
                 "ALLOWED_TAGS": ["a", "address", "b", "blockquote", "br", "caption", "code", "dd", "div", "dl", "dt", "em", "figcaption", "figure", "h1", "h2", "h3", "h4", "h5", "h6", "hr", "i", "img", "label", "li", "nl", "ol", "p", "pre", "s", "span", "strike", "strong", "sub", "sup", "table", "tbody", "td", "th", "thead", "tr", "u", "ul"]
             };
 
@@ -180,7 +180,7 @@ var dynamicTooltip = (function () {
 
             var configJSON = {};
             configJSON = util.jsonSaveExtend(stdConfigJSON, udConfigJSON);
-            var element = $(elemetSelector);
+            
 
             /* function to activate tooltip, get data and show tt */
             function activateTT(pObj, pEvent) {
@@ -228,6 +228,8 @@ var dynamicTooltip = (function () {
                         dataType: "json"
                     });
             }
+
+            var element = $(elemetSelector);
 
             /* for each element bind events */
             $.each(element, function () {
