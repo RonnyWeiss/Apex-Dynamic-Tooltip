@@ -1,6 +1,6 @@
 {
     "name": "Dynamic Tooltip",
-    "version": "1.7.2",
+    "version": "24.05.22",
     "description": "This plug-in is used to dynamically show a tooltip on any page element. With mouse-hover the content of the tooltip is loaded live from the database. Filter attributes in the desired element can then be used to filter the select. E.g.:\r\n\r\n<h2 id=\"myID\" pk=\"1\", sk=\"2\">test<\/h2>\r\n\r\nSo when you make a mouse-hover then the select uses the two attributes pk and sk to filter in sql statement. There is also a third one \"tk\". To submit these values you need three setable items on the page and these where set on hover. Then they where submitted and can be used as filter in sql statement.<p><b>Important clarification: My work in the development team of Oracle APEX is in no way related to my open source projects or the plug-ins here on apex.world! All plug-ins are built in my spare time and are not supported by Oracle!</b></p>",
     "keywords": ["oracle", "apex", "plugin", "dynamic action", "responsive", "notification"],
     "homepage": "https://github.com/RonnyWeiss/Apex-Dynamic-Tooltip",
